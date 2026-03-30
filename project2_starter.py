@@ -134,7 +134,12 @@ def output_csv(data, filename) -> None:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    sorted_data = sorted(data, key = lambda x: x[-1], reverse = True)
+    with open(filename, "w", newline = "", encoding = "utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["listing_title", "listing_id", "policy_number", "host_type", "host_name", "room_type", "location_rating"])
+        for row in sorted_data:
+            writer.writerow(row)
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
