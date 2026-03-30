@@ -1,7 +1,7 @@
 # SI 201 HW4 (Library Checkout System)
-# Your name:
-# Your student id:
-# Your email:
+# Your name: Jack Davidson
+# Your student id: 52442767
+# Your email: jackld@umich.edu
 # Who or what you worked with on this homework (including generative AI like ChatGPT):
 # If you worked with generative AI also add a statement for how you used it.
 # e.g.:
@@ -77,7 +77,15 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    with open(f"html_files/listing_{listing_id}.html", "r", encoding = "utf-8-sig") as f:
+        soup = BeautifulSoup(f, "html.parser")
+    details = {}
+    details["policy_number"] = soup.find("span", class_ = "policy-number").text.strip()
+    details["host_type"] = soup.find("span", class_ = "host-type").text.strip()
+    details["host_name"] = soup.find("span", class_ = "host-name").text.strip()
+    details["room_type"] = soup.find("span", class_ = "room-type").text.strip()
+    details["location_rating"] = float(soup.find("span", class_ = "location-rating").text.strip())
+    return {listing_id: details}
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -98,7 +106,12 @@ def create_listing_database(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    listings = load_listing_results(html_path)
+    database = []
+    for title, id in listings:
+        details = get_listing_details(id)[id]
+        database.append((title, id, details["policy_number"], details["host_type"], details["host_name"], details["room_type"], details["location_rating"]))
+    return database
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
