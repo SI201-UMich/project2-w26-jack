@@ -42,7 +42,7 @@ def load_listing_results(html_path) -> list[tuple]:
     # YOUR CODE STARTS HERE
     # ==============================
     with open(html_path, "r", encoding = "utf-8-sig") as f:
-        soup = BeautifulSoup, "html.parser"
+        soup = BeautifulSoup(f, "html.parser")
     listings = []
     for listing in soup.find_all("div", class_ = "listing"):
         title = listing.find("div", class_ = "title").text.strip()
