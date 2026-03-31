@@ -2,13 +2,11 @@
 # Your name: Jack Davidson
 # Your student id: 52442767
 # Your email: jackld@umich.edu
-# Who or what you worked with on this homework (including generative AI like ChatGPT):
+# Who or what you worked with on this homework (including generative AI like ChatGPT): Claude AI
 # If you worked with generative AI also add a statement for how you used it.
-# e.g.:
-# Asked ChatGPT for hints on debugging and for suggestions on overall code structure
-#
+# I used it to help debug two functions. The load_listing_results function and the google scholar searcher function. For the load listing function it helped me add the {"data-testid": "listing-card-title"} part. For the google scholar function it helped me add the headers part.
 # Did your use of GenAI on this assignment align with your goals and guidelines in your Gen AI contract? If not, why?
-#
+# Yes. I only used it when I was stuck, not to generate any code.
 # --- ARGUMENTS & EXPECTED RETURN VALUES PROVIDED --- #
 # --- SEE INSTRUCTIONS FOR FULL DETAILS ON METHOD IMPLEMENTATION --- #
 
