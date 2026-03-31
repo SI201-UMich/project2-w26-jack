@@ -278,7 +278,17 @@ def google_scholar_searcher(query):
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    pass
+    out = []
+    url = f"https://scholar.google.com/scholar?hl=en&as_sdt=0%2C23&q={query}&btnG="
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    r = requests.get(url, headers=headers)
+    soup = BeautifulSoup(r.text, "html.parser")
+    titles = soup.find_all("h3", class_ = "gs_rt")
+    for title in titles:
+        out.append(title.get_text().strip())
+    return out
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -355,6 +365,8 @@ class TestCases(unittest.TestCase):
 def main():
     detailed_data = create_listing_database(os.path.join("html_files", "search_results.html"))
     output_csv(detailed_data, "airbnb_dataset.csv")
+    x = google_scholar_searcher("turtles")
+    print(x)
 
 
 if __name__ == "__main__":
