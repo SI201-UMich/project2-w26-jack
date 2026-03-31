@@ -41,14 +41,17 @@ def load_listing_results(html_path) -> list[tuple]:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    with open(html_path, "r", encoding = "utf-8-sig") as f:
-        soup = BeautifulSoup(f, "html.parser")
-    listings = []
-    for listing in soup.find_all("div", class_ = "listing"):
-        title = listing.find("div", class_ = "title").text.strip()
-        id = listing["data-id"]
-        listings.append((title, id))
-    return listings
+    with open(html_path, "r", encoding="utf-8-sig") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+
+    results = []
+    title_divs = soup.find_all("div", {"data-testid": "listing-card-title"})
+    for div in title_divs:
+        listing_title = div.get_text().strip()
+        listing_id = div.get("id", "").replace("title_", "")
+        results.append((listing_title, listing_id))
+
+    return results
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -77,15 +80,66 @@ def get_listing_details(listing_id) -> dict:
     # ==============================
     # YOUR CODE STARTS HERE
     # ==============================
-    with open(f"html_files/listing_{listing_id}.html", "r", encoding = "utf-8-sig") as f:
-        soup = BeautifulSoup(f, "html.parser")
-    details = {}
-    details["policy_number"] = soup.find("span", class_ = "policy-number").text.strip()
-    details["host_type"] = soup.find("span", class_ = "host-type").text.strip()
-    details["host_name"] = soup.find("span", class_ = "host-name").text.strip()
-    details["room_type"] = soup.find("span", class_ = "room-type").text.strip()
-    details["location_rating"] = float(soup.find("span", class_ = "location-rating").text.strip())
-    return {listing_id: details}
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    file_path = os.path.join(base_dir, "html_files", f"listing_{listing_id}.html")
+
+    with open(file_path, "r", encoding="utf-8-sig") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+
+    # policy_number
+    policy_number = ""
+    for li in soup.find_all("li", class_="f19phm7j"):
+        text = li.get_text()
+        if "Policy" in text or "License" in text:
+            span = li.find("span", class_="ll4r2nl")
+            raw = span.get_text().strip() if span else text.replace("Policy number:", "").strip()
+            lower = raw.lower()
+            if "pending" in lower:
+                policy_number = "Pending"
+            elif "exempt" in lower:
+                policy_number = "Exempt"
+            else:
+                policy_number = raw
+            break
+
+    # host_type
+    superhost_tag = soup.find(string=lambda t: t and t.strip() == "Superhost")
+    host_type = "Superhost" if superhost_tag else "regular"
+
+    # host_name
+    host_name = ""
+    for h2 in soup.find_all("h2"):
+        txt = h2.get_text().replace("\xa0", " ")
+        match = re.search(r"[Hh]osted by\s+(.+)", txt)
+        if match:
+            host_name = match.group(1).strip()
+            break
+
+    # room_type
+    room_type = "Entire Room"
+    subtitle = ""
+    for h2 in soup.find_all("h2"):
+        txt = h2.get_text().replace("\xa0", " ")
+        if "hosted by" in txt.lower():
+            subtitle = txt
+            break
+    if "Private" in subtitle:
+        room_type = "Private Room"
+    elif "Shared" in subtitle:
+        room_type = "Shared Room"
+
+    # location_rating
+    location_rating = 0.0
+    loc_div = soup.find("div", class_="_y1ba89", string="Location")
+    if loc_div:
+        full_text = loc_div.parent.get_text().replace("Location", "").strip()
+        rating_match = re.search(r"(\d+\.?\d*)", full_text)
+        if rating_match:
+            location_rating = float(rating_match.group(1))
+
+    return {listing_id: {"policy_number": policy_number, "host_type": host_type,
+                         "host_name": host_name, "room_type": room_type,
+                         "location_rating": location_rating}}
     # ==============================
     # YOUR CODE ENDS HERE
     # ==============================
@@ -137,7 +191,7 @@ def output_csv(data, filename) -> None:
     sorted_data = sorted(data, key = lambda x: x[-1], reverse = True)
     with open(filename, "w", newline = "", encoding = "utf-8-sig") as f:
         writer = csv.writer(f)
-        writer.writerow(["listing_title", "listing_id", "policy_number", "host_type", "host_name", "room_type", "location_rating"])
+        writer.writerow(["Listing Title", "Listing ID", "Policy Number", "Host Type", "Host Name", "Room Type", "Location Rating"])
         for row in sorted_data:
             writer.writerow(row)
     # ==============================
@@ -173,9 +227,9 @@ def avg_location_rating_by_room_type(data) -> dict:
                 counts[room_type] = 0
             totals[room_type] = totals.get(room_type, 0) + rating
             counts[room_type] = counts.get(room_type, 0) + 1
-        averages = {}
-        for room_type in totals:
-            averages[room_type] = totals[room_type] / counts[room_type]
+    averages = {}
+    for room_type in totals:
+        averages[room_type] = totals[room_type] / counts[room_type]
     return averages
     # ==============================
     # YOUR CODE ENDS HERE
